@@ -35,25 +35,50 @@ class BaseLogin(APIView, GenericErrors):
     def post(self, request):
         data = request.data
 
+        """
+            Checks fields in request body with base in "LoginSerializer",
+            which requires the email field and password field.
+        """
         serializer = LoginSerializer(data=data)
         serializer.is_valid(raise_exception=True)
 
         email = data['email']
         password = data['password']
 
+        """
+            Try get an user by email. If does not exist an user with this email,
+            return a generic message of failure.
+        """
         try:
             user = FinalUserModel.objects.get(email=email)
         except FinalUserModel.DoesNotExist:
             response = self.failure_result()
             return Response(**response)
 
+        """
+            The code here only be executed if obtain success in get an user
+            by email. So now we will check the password. Here, we use the 
+            "check_password" function to decript the password in database and
+            compare with the password wich we recive in request body.
+            
+            The "check_password" function return True if the password is equals,
+            and False to contrary
+        """
         is_valid_password = check_password(password, user.password)
 
         if is_valid_password:
+            """
+                Here, we will set the "last_login" field with actual hour
+                with base in timezone.
+            """
             user.last_login = timezone.now()
             user.save()
             data = UserSerializer(user).data
 
+            """
+                And now we get or create a Token in database and apply the token reset
+                logic. This logic is explained in his class.
+            """
             token = Token.objects.get_or_create(user=user)[0]
             reset_token = ResetToken(token.key, user, 1)
             token = reset_token.reset_token()
@@ -62,6 +87,10 @@ class BaseLogin(APIView, GenericErrors):
             response = self.success_result(data)
             return Response(**response)
         else:
+            """
+                If the password is not valid, we return too a generic message of failure,
+                because we can't specify if the user missed the email field or the password field.
+            """
             response = self.failure_result()
             return Response(**response)
 
