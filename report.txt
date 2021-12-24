@@ -1,0 +1,22 @@
+1. Ele executa o try.
+
+2. Caso dê erro, ele tenta executar o except.
+
+3. Se o except não tiver nenhuma especificação, ele executará.
+
+4. Se o except tiver alguma especificação, ele só executará caso o erro caiba na exceção.
+
+É boa prática especificar a exceção.
+É boa prática usar o "Excpetion as error" em casos genéricos.
+
+Você pode usar quantos excepts você quiser, mas todos seguem as
+leis das boas práticas.
+
+Você pode usar o else após o except e ele será executado caso nenhuma
+parte do seu código dentro do try dê erro.
+
+Você pode usar o finally após o except e ele será executado depois
+do try|except.
+
+Possíveis erros:
+NameError, TypeError, ValueError, SyntaxError, ZeroDivisionError
