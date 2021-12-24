@@ -3,3 +3,4 @@ migrations
 maleta/.env
 *.sqlite3
 .idea
+__pycache__
