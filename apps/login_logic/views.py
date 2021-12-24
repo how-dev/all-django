@@ -18,7 +18,9 @@ class UserViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.validated_data["password"] = make_password(serializer.validated_data["password"])
+        serializer.validated_data["password"] = make_password(
+            serializer.validated_data["password"]
+        )
         self.perform_create(serializer)
 
         user = FinalUserModel.objects.get(id=serializer.data["id"])
@@ -42,8 +44,8 @@ class BaseLogin(APIView, GenericErrors):
         serializer = LoginSerializer(data=data)
         serializer.is_valid(raise_exception=True)
 
-        email = data['email']
-        password = data['password']
+        email = data["email"]
+        password = data["password"]
 
         """
             Try get an user by email. If does not exist an user with this email,
@@ -68,8 +70,8 @@ class BaseLogin(APIView, GenericErrors):
 
         if is_valid_password:
             """
-                Here, we will set the "last_login" field with actual hour
-                with base in timezone.
+            Here, we will set the "last_login" field with actual hour
+            with base in timezone.
             """
             user.last_login = timezone.now()
             user.save()
@@ -88,9 +90,8 @@ class BaseLogin(APIView, GenericErrors):
             return Response(**response)
         else:
             """
-                If the password is not valid, we return too a generic message of failure,
-                because we can't specify if the user missed the email field or the password field.
+            If the password is not valid, we return too a generic message of failure,
+            because we can't specify if the user missed the email field or the password field.
             """
             response = self.failure_result()
             return Response(**response)
-

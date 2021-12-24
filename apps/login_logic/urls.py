@@ -8,6 +8,4 @@ router.register(r"user", UserViewSet)
 
 urlpatterns = router.urls
 
-urlpatterns += [
-    path("login/", BaseLogin.as_view())
-]
+urlpatterns += [path("login/", BaseLogin.as_view())]

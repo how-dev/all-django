@@ -47,4 +47,3 @@ class FinalUserModel(AbstractUser):
     class Meta:
         db_table = 'user"."final_user'
         managed = True
-

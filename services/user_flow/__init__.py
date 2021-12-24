@@ -5,8 +5,17 @@ from rest_framework.authtoken.models import Token
 
 class GenericErrors:
     messages = {
-        "failure": {"data": {"status": status.HTTP_401_UNAUTHORIZED, "result": "Some field is incorrect"}, "status": status.HTTP_401_UNAUTHORIZED},
-        "success": {"data": {"status": status.HTTP_200_OK, "result": None}, "status": status.HTTP_200_OK}
+        "failure": {
+            "data": {
+                "status": status.HTTP_401_UNAUTHORIZED,
+                "result": "Some field is incorrect",
+            },
+            "status": status.HTTP_401_UNAUTHORIZED,
+        },
+        "success": {
+            "data": {"status": status.HTTP_200_OK, "result": None},
+            "status": status.HTTP_200_OK,
+        },
     }
 
     def failure_result(self):

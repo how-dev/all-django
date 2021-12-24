@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class LoginLogicConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.login_logic'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.login_logic"
