@@ -1,5 +1,6 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
+
+from apps.login_logic.models import FinalUserModel
 
 
 class LoginSerializer(serializers.Serializer):
@@ -15,5 +16,10 @@ class LoginSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = FinalUserModel
         fields = "__all__"
+        extra_kwargs = {
+            "password": {"write_only": True},
+            "is_active": {"write_only": True},
+            "date_joined": {"write_only": True},
+        }

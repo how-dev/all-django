@@ -1,10 +1,14 @@
 from pathlib import Path
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-n-*2sa4)uz5^anr)mg^9tmwp@p3@uzzqbrevk6!-b2px@m*uu-'
+SECRET_KEY = env('SECRET_KEY')
 
-AUTH_USER_MODEL = "auth.User"
+AUTH_USER_MODEL = "login_logic.FinalUserModel"
 
 DEBUG = True
 
@@ -24,7 +28,12 @@ LOCAL_APPS = [
     "apps.login_logic"
 ]
 
-INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
+THIRD_APPS = [
+    "rest_framework",
+    "rest_framework.authtoken"
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -58,8 +67,12 @@ WSGI_APPLICATION = 'maleta.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        "HOST": env("DB_HOST"),
+        "PORT": env("DB_PORT"),
     }
 }
 
@@ -81,7 +94,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
