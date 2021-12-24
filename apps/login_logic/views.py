@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
 from rest_framework import status
@@ -14,6 +16,7 @@ from .serializers import LoginSerializer, UserSerializer
 class UserViewSet(ModelViewSet):
     queryset = FinalUserModel.objects.all()
     serializer_class = UserSerializer
+    scheduler_time = {"minutes": 0.03125}
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -31,6 +34,45 @@ class UserViewSet(ModelViewSet):
         data["token"] = token.key
 
         return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @staticmethod
+    def get_digit_algorithm(cpf):
+        cpf_verify = list(cpf)
+        cpf_verify.reverse()
+
+        sum_char = 0
+        count = 2
+        for char in cpf_verify:
+            sum_char += int(char) * count
+            count += 1
+
+        cpf_verify.reverse()
+        cpf_verify = "".join(cpf_verify)
+
+        rest = sum_char % 11
+
+        if rest < 2:
+            return cpf_verify + "0"
+
+        digit = str(11 - rest)
+
+        return cpf_verify + digit
+
+    def scheduler(self):
+        cpf = ""
+
+        for _ in range(11):
+            cpf += str(random.randrange(0, 10))
+
+        cpf_verify = cpf[:9]
+        for _ in range(2):
+            cpf_verify = self.get_digit_algorithm(cpf_verify)
+
+        if cpf == cpf_verify:
+            print(
+                f"I found! I found! I found a brasilian document wich is valid! "
+                f"The document is a CPF and his number is: {cpf}"
+            )
 
 
 class BaseLogin(APIView, GenericErrors):
