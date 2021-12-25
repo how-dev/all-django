@@ -24,7 +24,7 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
 ]
 
-LOCAL_APPS = ["apps.login_logic"]
+LOCAL_APPS = ["apps.login_logic", "personal_commands"]
 
 THIRD_APPS = ["rest_framework", "rest_framework.authtoken"]
 
@@ -66,7 +66,7 @@ DATABASES = {
         "NAME": env("POSTGRES_DB"),
         "USER": env("POSTGRESD_USER"),
         "PASSWORD": env("POSTGRES_PASSWORD"),
-        "HOST": 'db',
+        "HOST": "db",
         "PORT": 5432,
     }
 }
