@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+    db:
+        image: postgres
+        env_file: maleta/.env
+        ports:
+            - "5432:5432"
+        volumes:
+            - maleta:/var/lib/postgresql/data
+
+    web:
+        build: .
+        env_file: maleta/.env
+        command:
+            bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; python manage.py runserver 0.0.0.0:8000'
+        stdin_open: true
+        tty: true
+        ports:
+            - "8000:8000"
+        volumes:
+            -   .:/code
+        depends_on:
+            - db
+
+volumes:
+    maleta:
+        external: true
