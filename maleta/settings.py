@@ -26,7 +26,7 @@ DJANGO_APPS = [
 
 LOCAL_APPS = ["apps.login_logic", "personal_commands"]
 
-THIRD_APPS = ["rest_framework", "rest_framework.authtoken"]
+THIRD_APPS = ["rest_framework", "rest_framework.authtoken", "django_filters"]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_APPS + LOCAL_APPS
 
@@ -98,6 +98,25 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'services.pagination.PageNumberPagination',
+    'PAGE_SIZE': env("PAGE_SIZE"),
+
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '1000/day',
+        'user': '1000/day'
+    },
+    
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ),
+}
 
 CACHE = {
     "default": {

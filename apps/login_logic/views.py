@@ -10,21 +10,27 @@ from django.views.decorators.vary import vary_on_headers
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from services.import_export import DBToFile
 from services.user_flow import GenericErrors, ResetToken
+from .filters import FinalUserFilter
 from .models import FinalUserModel
 from .resources import UserResource
 from .serializers import LoginSerializer, UserSerializer
+from django_filters import rest_framework as filters
 
 
 class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
-    queryset = FinalUserModel.objects.all()
+    queryset = FinalUserModel.objects.order_by("id")
     serializer_class = UserSerializer
     scheduler_time = {"minutes": 0.03125}
     supported_files_types = ("xlsx", "csv")
+    throttle_classes = [UserRateThrottle]
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = FinalUserFilter
 
     @method_decorator(cache_page(60, key_prefix="user_cache"))
     @method_decorator(vary_on_headers("Authorization"))
