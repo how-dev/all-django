@@ -42,7 +42,7 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
 
         serializer = self.get_serializer(queryset, many=True)
 
-        cache.set('estudos', json.dumps(serializer.data))
+        cache.set("estudos", json.dumps(serializer.data))
 
         return Response(serializer.data)
         # return Response(json.loads(cached))
@@ -61,10 +61,17 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
 
         if file_type == "csv":
             csv_response = self.http_csv(
-                fields=("id", "last_login", "is_active", "date_joined", "email", "name"),
+                fields=(
+                    "id",
+                    "last_login",
+                    "is_active",
+                    "date_joined",
+                    "email",
+                    "name",
+                ),
                 queryset=self.queryset,
                 serializer=self.serializer_class,
-                file_name="users"
+                file_name="users",
             )
 
             return csv_response

@@ -1,6 +1,5 @@
 import csv
 import io
-from datetime import datetime
 
 import pandas as pd
 from django.http import HttpResponse
@@ -10,9 +9,10 @@ class DBToFile:
     supported_files_types = ("xlsx", "csv")
     csv_fields = ("id",)
 
-    def convert_file_to_excel(self, data_frame, file_name):
+    @staticmethod
+    def convert_file_to_excel(data_frame, file_name):
         bio = io.BytesIO()
-        writer = pd.ExcelWriter(bio, engine='xlsxwriter')
+        writer = pd.ExcelWriter(bio, engine="xlsxwriter")
         data_frame.to_excel(writer, f"{file_name}.xlsx", index=False)
         writer.save()
         bio.seek(0)
@@ -41,14 +41,14 @@ class DBToFile:
         for row in data:
             writer.writerow(row)
 
-        response['Content-Disposition'] = f'attachment; filename="{file_name}.csv"'
+        response["Content-Disposition"] = f'attachment; filename="{file_name}.csv"'
 
         return response
 
     def http_excel(self, resources, file_name):
         excel_file = self.create_excel_file(resources, file_name)
-        response = HttpResponse(excel_file, content_type='application/vnd.ms-excel')
-        response['Content-Disposition'] = f'attachment; filename="{file_name}.xlsx"'
+        response = HttpResponse(excel_file, content_type="application/vnd.ms-excel")
+        response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
 
         return response
 

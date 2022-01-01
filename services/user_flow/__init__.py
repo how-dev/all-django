@@ -19,10 +19,10 @@ class GenericErrors:
         "not_supported": {
             "data": {
                 "status": status.HTTP_403_FORBIDDEN,
-                "result": "The param 'file_type' is not supported."
+                "result": "The param 'file_type' is not supported.",
             },
-            "status": status.HTTP_403_FORBIDDEN
-        }
+            "status": status.HTTP_403_FORBIDDEN,
+        },
     }
 
     def failure_result(self):
