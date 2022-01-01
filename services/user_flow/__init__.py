@@ -16,6 +16,13 @@ class GenericErrors:
             "data": {"status": status.HTTP_200_OK, "result": None},
             "status": status.HTTP_200_OK,
         },
+        "not_supported": {
+            "data": {
+                "status": status.HTTP_403_FORBIDDEN,
+                "result": "The param 'file_type' is not supported."
+            },
+            "status": status.HTTP_403_FORBIDDEN
+        }
     }
 
     def failure_result(self):
@@ -26,6 +33,9 @@ class GenericErrors:
         message["data"]["result"] = result
 
         return message
+
+    def not_supported_result(self):
+        return self.messages["not_supported"]
 
 
 class ResetToken:

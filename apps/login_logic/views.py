@@ -1,22 +1,74 @@
+import json
 import random
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from services.import_export import DBToFile
 from services.user_flow import GenericErrors, ResetToken
 from .models import FinalUserModel
+from .resources import UserResource
 from .serializers import LoginSerializer, UserSerializer
 
 
-class UserViewSet(ModelViewSet):
+class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
     queryset = FinalUserModel.objects.all()
     serializer_class = UserSerializer
     scheduler_time = {"minutes": 0.03125}
+    supported_files_types = ("xlsx", "csv")
+
+    @method_decorator(cache_page(60, key_prefix="user_cache"))
+    def list(self, request, *args, **kwargs):
+        # cached = cache.get('estudos')
+        #
+        # if cached is None:
+
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        cache.set('estudos', json.dumps(serializer.data))
+
+        return Response(serializer.data)
+        # return Response(json.loads(cached))
+
+    def export_file(self, _, file_type="xlsx"):
+        is_supported = self.is_supported(file_type)
+
+        if not is_supported:
+            response = self.not_supported_result()
+            return Response(**response)
+
+        if file_type == "xlsx":
+            excel_response = self.http_excel(UserResource, "users")
+
+            return excel_response
+
+        if file_type == "csv":
+            csv_response = self.http_csv(
+                fields=("id", "last_login", "is_active", "date_joined", "email", "name"),
+                queryset=self.queryset,
+                serializer=self.serializer_class,
+                file_name="users"
+            )
+
+            return csv_response
+
+        response = self.failure_result()
+        return Response(**response)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
