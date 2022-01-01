@@ -6,3 +6,5 @@
 3. Agendamento de ações com scheduler
 4. Comandos personalizados com manage.py
 5. Configuração básica do Docker
+6. Import-Export de csv e excel
+7. Implementação do Django-Redis com Docker
