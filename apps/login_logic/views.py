@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -26,6 +27,7 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
     supported_files_types = ("xlsx", "csv")
 
     @method_decorator(cache_page(60, key_prefix="user_cache"))
+    @method_decorator(vary_on_headers("Authorization"))
     def list(self, request, *args, **kwargs):
         # cached = cache.get('estudos')
         #
