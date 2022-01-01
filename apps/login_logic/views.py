@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
@@ -15,22 +16,25 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from services.import_export import DBToFile
-from services.user_flow import GenericErrors, ResetToken
+from services.user_flow import GenericErrors, ResetToken, CPFLogics
 from .filters import FinalUserFilter
 from .models import FinalUserModel
+from .permissions import FinalUserPermissions
 from .resources import UserResource
 from .serializers import LoginSerializer, UserSerializer
 from django_filters import rest_framework as filters
 
 
-class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
-    queryset = FinalUserModel.objects.order_by("id")
+class UserViewSet(ModelViewSet, DBToFile, GenericErrors, CPFLogics):
+    queryset = FinalUserModel.objects.order_by("id").filter(is_active=True)
     serializer_class = UserSerializer
-    scheduler_time = {"minutes": 0.03125}
-    supported_files_types = ("xlsx", "csv")
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [FinalUserPermissions]
     throttle_classes = [UserRateThrottle]
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = FinalUserFilter
+    scheduler_time = {"minutes": 0.03125}
+    supported_files_types = ("xlsx", "csv")
 
     @method_decorator(cache_page(60, key_prefix="user_cache"))
     @method_decorator(vary_on_headers("Authorization"))
@@ -74,6 +78,7 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
                     "date_joined",
                     "email",
                     "name",
+                    "document"
                 ),
                 queryset=self.queryset,
                 serializer=self.serializer_class,
@@ -83,6 +88,8 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
             return csv_response
 
         response = self.failure_result()
+
+
         return Response(**response)
 
     def create(self, request, *args, **kwargs):
@@ -102,44 +109,29 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors):
 
         return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @staticmethod
-    def get_digit_algorithm(cpf):
-        cpf_verify = list(cpf)
-        cpf_verify.reverse()
-
-        sum_char = 0
-        count = 2
-        for char in cpf_verify:
-            sum_char += int(char) * count
-            count += 1
-
-        cpf_verify.reverse()
-        cpf_verify = "".join(cpf_verify)
-
-        rest = sum_char % 11
-
-        if rest < 2:
-            return cpf_verify + "0"
-
-        digit = str(11 - rest)
-
-        return cpf_verify + digit
-
     def scheduler(self):
-        cpf = ""
+        try:
+            cpf = self.force_valid_cpf()
+        except RecursionError:
+            return None
 
-        for _ in range(11):
-            cpf += str(random.randrange(0, 10))
+        queryset = FinalUserModel.objects.order_by("id").filter(document__isnull=True)
 
-        cpf_verify = cpf[:9]
-        for _ in range(2):
-            cpf_verify = self.get_digit_algorithm(cpf_verify)
+        if len(queryset) > 0:
+            try:
+                FinalUserModel.objects.get(document=cpf)
+                print("Duplicated CPF, nothing was done.")
+            except FinalUserModel.DoesNotExist:
+                user = queryset[0]
+                user.document = cpf
+                user.save()
+                print(f"I found a valid document. Is a brazilian document, his number is {cpf} and "
+                      f"I put this value in the user's document field with id {user.id}"
+                      )
+        else:
+            print("All users has document.")
 
-        if cpf == cpf_verify:
-            print(
-                f"I found! I found! I found a brasilian document wich is valid! "
-                f"The document is a CPF and his number is: {cpf}"
-            )
+
 
 
 class BaseLogin(APIView, GenericErrors):
@@ -199,8 +191,8 @@ class BaseLogin(APIView, GenericErrors):
             return Response(**response)
         else:
             """
-            If the password is not valid, we return too a generic message of failure,
-            because we can't specify if the user missed the email field or the password field.
+                If the password is not valid, we return too a generic message of failure,
+                because we can't specify if the user missed the email field or the password field.
             """
             response = self.failure_result()
             return Response(**response)

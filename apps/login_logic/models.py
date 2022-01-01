@@ -1,5 +1,6 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -41,6 +42,18 @@ class FinalUserModel(AbstractUser):
 
     email = models.EmailField(max_length=100, unique=True)
     name = models.CharField(max_length=100)
+    document = models.CharField(
+        max_length=11,
+        validators=[
+            RegexValidator(
+                regex="^.{11}$",
+                message="Length must to be 11",
+                code="nomatch"
+            )
+        ],
+        null=True,
+        blank=True
+    )
 
     objects = UserManager()
 
