@@ -1,5 +1,4 @@
 import json
-import random
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
@@ -33,7 +32,7 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors, CPFLogics):
     throttle_classes = [UserRateThrottle]
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = FinalUserFilter
-    scheduler_time = {"minutes": 0.03125}
+    scheduler_time = {"minutes": 60}
     supported_files_types = ("xlsx", "csv")
 
     @method_decorator(cache_page(60, key_prefix="user_cache"))
@@ -88,8 +87,6 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors, CPFLogics):
             return csv_response
 
         response = self.failure_result()
-
-
         return Response(**response)
 
     def create(self, request, *args, **kwargs):
@@ -129,9 +126,7 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors, CPFLogics):
                       f"I put this value in the user's document field with id {user.id}"
                       )
         else:
-            print("All users has document.")
-
-
+            return None
 
 
 class BaseLogin(APIView, GenericErrors):

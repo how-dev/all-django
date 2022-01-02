@@ -112,11 +112,13 @@ REST_FRAMEWORK = {
         'anon': '1000/day',
         'user': '1000/day'
     },
-    
+
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend'
     ),
 }
+
+TEST_RUNNER = "services.test_runner.PostgresSchemaTestRunner"
 
 CACHE = {
     "default": {

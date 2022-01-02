@@ -10,3 +10,5 @@ RUN pip install psycopg2
 
 WORKDIR /code
 COPY . /code/
+
+RUN black .

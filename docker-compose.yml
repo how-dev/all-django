@@ -22,6 +22,13 @@ services:
         ports:
             - "8081:8081"
 
+    test:
+        env_file: maleta/.env
+        command: bash -c 'coverage run ./manage.py test && coverage report'
+        build: .
+        volumes:
+            -   .:/code
+
     web:
         build: .
         env_file: maleta/.env
@@ -35,6 +42,7 @@ services:
             -   .:/code
         depends_on:
             - db
+            - test
 
 volumes:
     maleta:

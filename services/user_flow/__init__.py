@@ -71,6 +71,10 @@ class ResetToken:
 
 class CPFLogics:
     @staticmethod
+    def format_cpf(cpf):
+        return f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
+
+    @staticmethod
     def get_digit_algorithm(cpf):
         cpf_verify = list(cpf)
         cpf_verify.reverse()
@@ -115,6 +119,3 @@ class CPFLogics:
         else:
             return self.force_valid_cpf()
 
-            # print(f"I found a valid document. Is a brazilian document, his number is {cpf} and "
-            #       f"I put this value in the user's document field with id {user.id}"
-            #       )

@@ -4,3 +4,4 @@ maleta/.env
 *.sqlite3
 .idea
 __pycache__
+.coverage
