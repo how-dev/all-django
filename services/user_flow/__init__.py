@@ -6,6 +6,8 @@ from rest_framework.authtoken.models import Token
 
 
 class GenericErrors:
+    def __init__(self):
+        pass
     messages = {
         "failure": {
             "data": {
@@ -70,6 +72,8 @@ class ResetToken:
 
 
 class CPFLogics:
+    def __init__(self):
+        pass
     @staticmethod
     def format_cpf(cpf):
         return f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"

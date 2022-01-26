@@ -10,10 +10,12 @@ fake = Faker()
 class Command(BaseCommand):
     help = "Print Hello World"
 
-    def add_arguments(self, parser):
+    @staticmethod
+    def add_arguments(parser):
         parser.add_argument("qtd", type=int)
 
-    def handle(self, *args, **options):
+    @staticmethod
+    def handle(*_, **options):
         qtd = options["qtd"]
 
         for _ in range(qtd):

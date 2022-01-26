@@ -5,7 +5,8 @@ class LoginLogicConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.login_logic"
 
-    def ready(self):
+    @staticmethod
+    def ready():
         from services.scheduler import start
         from .views import UserViewSet
 
