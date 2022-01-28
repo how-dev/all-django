@@ -10,8 +10,7 @@ fake = Faker()
 class Command(BaseCommand):
     help = "Print Hello World"
 
-    @staticmethod
-    def add_arguments(parser):
+    def add_arguments(self, parser):
         parser.add_argument("qtd", type=int)
 
     @staticmethod
@@ -25,7 +24,7 @@ class Command(BaseCommand):
                     name=fake.name(),
                     email=fake.unique.email(),
                     password=str(password),
-                    is_active=True
+                    is_active=True,
                 )
             except Exception as e:
                 print(e)

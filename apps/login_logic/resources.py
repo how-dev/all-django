@@ -16,9 +16,19 @@ class UserResource(resources.ModelResource):
     )
     email = fields.Field(attribute="email", column_name="Email", widget=CharWidget())
     name = fields.Field(attribute="name", column_name="Name", widget=CharWidget())
-    document = fields.Field(attribute="document", column_name="Document", widget=CharWidget())
+    document = fields.Field(
+        attribute="document", column_name="Document", widget=CharWidget()
+    )
 
     class Meta:
         model = FinalUserModel
-        fields = ["id", "last_login", "is_active", "date_joined", "email", "name", "document"]
+        fields = [
+            "id",
+            "last_login",
+            "is_active",
+            "date_joined",
+            "email",
+            "name",
+            "document",
+        ]
         export_order = fields

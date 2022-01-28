@@ -21,8 +21,17 @@ class FinalUserModelTest(TestCase):
             is_active=True,
             date_joined=timezone.now(),
             last_login=timezone.now(),
-            document="00000000000"
+            document="00000000000",
         )
+
+    def test_final_user_model_hasnt_default_fields(self):
+        self.assertIsInstance(self.base_user.username, type(None))
+        self.assertIsInstance(self.base_user.user_permissions, type(None))
+        self.assertIsInstance(self.base_user.first_name, type(None))
+        self.assertIsInstance(self.base_user.last_name, type(None))
+        self.assertIsInstance(self.base_user.groups, type(None))
+        self.assertIsInstance(self.base_user.is_superuser, type(None))
+        self.assertIsInstance(self.base_user.is_staff, type(None))
 
     def test_final_user_model_has_information_fields(self):
         self.assertIsInstance(self.base_user.name, str)

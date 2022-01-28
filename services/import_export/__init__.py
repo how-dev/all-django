@@ -8,6 +8,7 @@ from django.http import HttpResponse
 class DBToFile:
     def __init__(self):
         pass
+
     supported_files_types = ("xlsx", "csv")
     csv_fields = ("id",)
 

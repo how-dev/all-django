@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 class GenericErrors:
     def __init__(self):
         pass
+
     messages = {
         "failure": {
             "data": {
@@ -74,6 +75,7 @@ class ResetToken:
 class CPFLogics:
     def __init__(self):
         pass
+
     @staticmethod
     def format_cpf(cpf):
         return f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
@@ -123,3 +125,9 @@ class CPFLogics:
         else:
             return self.force_valid_cpf()
 
+    def validate_cpf(self, cpf):
+        cpf_verify = cpf[:9]
+        for _ in range(2):
+            cpf_verify = self.get_digit_algorithm(cpf_verify)
+
+        return cpf == cpf_verify

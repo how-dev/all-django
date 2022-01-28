@@ -14,6 +14,7 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from services.blr_lib import BRL
 from services.import_export import DBToFile
 from services.user_flow import GenericErrors, ResetToken, CPFLogics
 from .filters import FinalUserFilter
@@ -35,26 +36,14 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors, CPFLogics):
     scheduler_time = {"minutes": 60}
     supported_files_types = ("xlsx", "csv")
 
-    @method_decorator(cache_page(60, key_prefix="user_cache"))
+    @method_decorator(cache_page(60, key_prefix="list"))
     @method_decorator(vary_on_headers("Authorization"))
     def list(self, request, *args, **kwargs):
-        # cached = cache.get('estudos')
-        #
-        # if cached is None:
-
         queryset = self.filter_queryset(self.get_queryset())
-
         page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-
-        cache.set("estudos", json.dumps(serializer.data))
-
-        return Response(serializer.data)
-        # return Response(json.loads(cached))
+        serializer = self.get_serializer(page, many=True)
+        cache.set("list", json.dumps(serializer.data))
+        return self.get_paginated_response(serializer.data)
 
     def export_file(self, _, file_type="xlsx"):
         is_supported = self.is_supported(file_type)
@@ -68,26 +57,22 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors, CPFLogics):
 
             return excel_response
 
-        if file_type == "csv":
-            csv_response = self.http_csv(
-                fields=(
-                    "id",
-                    "last_login",
-                    "is_active",
-                    "date_joined",
-                    "email",
-                    "name",
-                    "document"
-                ),
-                queryset=self.queryset,
-                serializer=self.serializer_class,
-                file_name="users",
-            )
+        csv_response = self.http_csv(
+            fields=(
+                "id",
+                "last_login",
+                "is_active",
+                "date_joined",
+                "email",
+                "name",
+                "document",
+            ),
+            queryset=self.queryset,
+            serializer=self.serializer_class,
+            file_name="users",
+        )
 
-            return csv_response
-
-        response = self.failure_result()
-        return Response(**response)
+        return csv_response
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -107,24 +92,21 @@ class UserViewSet(ModelViewSet, DBToFile, GenericErrors, CPFLogics):
         return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
     def scheduler(self):
-        try:
-            cpf = self.force_valid_cpf()
-        except RecursionError:
-            return None
+        cpf = self.force_valid_cpf()
 
         queryset = FinalUserModel.objects.order_by("id").filter(document__isnull=True)
 
         if len(queryset) > 0:
             try:
                 FinalUserModel.objects.get(document=cpf)
-                print("Duplicated CPF, nothing was done.")
             except FinalUserModel.DoesNotExist:
                 user = queryset[0]
                 user.document = cpf
                 user.save()
-                print(f"I found a valid document. Is a brazilian document, his number is {cpf} and "
-                      f"I put this value in the user's document field with id {user.id}"
-                      )
+                print(
+                    f"I found a valid document. Is a brazilian document, his number is {cpf} and "
+                    f"I put this value in the user's document field with id {user.id}"
+                )
         else:
             return None
 
@@ -186,8 +168,8 @@ class BaseLogin(APIView, GenericErrors):
             return Response(**response)
         else:
             """
-                If the password is not valid, we return too a generic message of failure,
-                because we can't specify if the user missed the email field or the password field.
+            If the password is not valid, we return too a generic message of failure,
+            because we can't specify if the user missed the email field or the password field.
             """
             response = self.failure_result()
             return Response(**response)
